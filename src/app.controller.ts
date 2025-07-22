@@ -10,7 +10,13 @@ export class AppController {
     return this.appService.getHello();
   }
   @Get()
-  lookup() {
-
+  async lookup(phoneNumber: string) {
+    const phoneInfo = await this.appService.lookupPhoneInfo(phoneNumber)
+    return {
+      number: phoneInfo.phone_number,
+      status: phoneInfo.status,
+      description: phoneInfo.description,
+      last_updated: phoneInfo.updated_at
+    }
   }
 }

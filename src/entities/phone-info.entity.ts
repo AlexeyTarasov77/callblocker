@@ -12,15 +12,19 @@ export class PhoneInfoEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
+  // phone number in an international format
   @Column({ unique: true })
-  phoneNumber: string;
+  phone_number: string;
 
+  // Phone number category
   @Column({ type: "enum", enum: PhoneStatus })
   status: PhoneStatus;
 
+  // Short description
   @Column()
   description: string;
 
+  // Information source
   @Column({ nullable: true })
   source: string;
 
