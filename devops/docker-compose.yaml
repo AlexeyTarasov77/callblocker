@@ -1,0 +1,30 @@
+volumes:
+  callblocker-pgdata:
+
+services:
+  backend: 
+    container_name: callblocker-backend
+    build:
+      dockerfile: devops/Dockerfile
+      context: ../
+    volumes:
+      - ../src:/app/src
+    env_file:
+        - ../.dev.env
+    ports:
+      - 127.0.0.1:3000:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+  postgres:
+    container_name: callblocker-postgres
+    image: postgres:17.1-alpine
+    volumes:
+      - callblocker-pgdata:/var/lib/postgresql/data
+    env_file:
+        - ../.dev.env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
