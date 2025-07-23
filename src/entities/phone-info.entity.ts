@@ -1,13 +1,19 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 export enum PhoneStatus {
-  SAFE = "safe",
-  SPAM = "spam",
-  SCAM = "scam",
-  UNKNOWN = "unknown"
+  SAFE = 'safe',
+  SPAM = 'spam',
+  SCAM = 'scam',
+  UNKNOWN = 'unknown',
 }
 
-@Entity({ name: "phone_info" })
+@Entity({ name: 'phone_info' })
 export class PhoneInfoEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -17,7 +23,7 @@ export class PhoneInfoEntity {
   phone_number: string;
 
   // Phone number category
-  @Column({ type: "enum", enum: PhoneStatus })
+  @Column({ type: 'enum', enum: PhoneStatus })
   status: PhoneStatus;
 
   // Short description

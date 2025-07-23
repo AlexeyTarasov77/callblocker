@@ -1,2 +1,1 @@
-export { PhoneInfoEntity, PhoneStatus } from "./phone-info.entity";
-
+export { PhoneInfoEntity, PhoneStatus } from './phone-info.entity';
