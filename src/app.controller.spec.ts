@@ -1,4 +1,6 @@
 jest.mock('./auth.guard.ts');
+jest.mock('@nestjs/cache-manager');
+
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController, getPhoneInfoResponse } from './app.controller';

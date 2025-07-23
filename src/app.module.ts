@@ -4,6 +4,9 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApiKeyEntity, PhoneInfoEntity } from './entities';
 import { providers } from './app.providers';
+import { Keyv } from "keyv"
+import { CacheModule } from '@nestjs/cache-manager';
+import { createKeyv } from '@keyv/redis';
 
 @Module({
   imports: [
@@ -17,8 +20,17 @@ import { providers } from './app.providers';
       entities: [PhoneInfoEntity, ApiKeyEntity],
       synchronize: true,
     }),
+    CacheModule.registerAsync({
+      useFactory: async () => {
+        const fiveMinsMs = 5 * 60 * 1000
+        return {
+          store: createKeyv(process.env.REDIS_URL),
+          ttl: fiveMinsMs
+        };
+      },
+    }),
   ],
   controllers: [AppController],
   providers: [...providers, AppService],
 })
-export class AppModule {}
+export class AppModule { }

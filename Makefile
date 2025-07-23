@@ -1,5 +1,5 @@
 include .dev.env
-export
+all: compose/down compose/build compose/up
 
 compose/up:
 	docker compose -f devops/docker-compose.yaml up -d

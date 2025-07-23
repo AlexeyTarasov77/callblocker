@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AppService, PhoneInfoNotFoundError } from './app.service';
 import { PhoneInfoEntity, PhoneStatus } from './entities';
 import { AddPhoneInfoDto } from './app.dto';
 import { AuthGuard } from './auth.guard';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 export const getPhoneInfoResponse = (phoneInfo: PhoneInfoEntity) => ({
   number: phoneInfo.phone_number,
@@ -16,6 +17,7 @@ export class AppController {
   constructor(private readonly appService: AppService) { }
 
   @Get('/lookup')
+  @UseInterceptors(CacheInterceptor)
   async lookupPhoneInfo(@Query("number") number: string) {
     try {
       const phoneInfo = await this.appService.lookupPhoneInfo(number);
