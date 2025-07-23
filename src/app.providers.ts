@@ -8,6 +8,6 @@ export const providers = [
     provide: PhoneInfoRepoToken,
     useFactory: (dataSource: DataSource) =>
       dataSource.getRepository(PhoneInfoEntity),
-    inject: ['DATA_SOURCE'],
+    inject: [DataSource],
   },
 ];

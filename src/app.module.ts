@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PhoneInfoEntity } from './entities';
+import { ApiKeyEntity, PhoneInfoEntity } from './entities';
 import { providers } from './app.providers';
 
 @Module({
@@ -14,11 +14,11 @@ import { providers } from './app.providers';
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [PhoneInfoEntity],
+      entities: [PhoneInfoEntity, ApiKeyEntity],
       synchronize: true,
     }),
   ],
   controllers: [AppController],
   providers: [...providers, AppService],
 })
-export class AppModule {}
+export class AppModule { }

@@ -1,3 +1,5 @@
+include .dev.env
+export
 
 compose/up:
 	docker compose -f devops/docker-compose.yaml up -d
@@ -7,3 +9,6 @@ compose/build:
 
 compose/down:  
 	docker compose -f devops/docker-compose.yaml down
+
+get-api-key:
+	@bash get-api-key.sh
