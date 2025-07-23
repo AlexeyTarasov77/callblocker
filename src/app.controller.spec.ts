@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { PhoneInfoEntity, PhoneStatus } from './entities';
-import { faker } from '@faker-js/faker';
+import { AppService, PhoneInfoNotFoundError } from './app.service';
 import { creeateFakePhoneInfo } from './app.test-utils';
+import { PhoneStatus } from './entities';
+import { faker } from '@faker-js/faker/.';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -25,7 +25,7 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('test lookup phone info', async () => {
+    it('test lookup phone info - success', async () => {
       const mockPhoneInfo = creeateFakePhoneInfo()
       appService.lookupPhoneInfo.mockResolvedValue(mockPhoneInfo);
       const expectedResponse = {
@@ -38,6 +38,19 @@ describe('AppController', () => {
         expectedResponse,
       );
       expect(appService.lookupPhoneInfo).toHaveBeenCalledWith(mockPhoneInfo.phone_number);
+    });
+    it('test lookup phone info - not found', async () => {
+      const fakePhoneNumber = faker.phone.number({ style: 'international' })
+      appService.lookupPhoneInfo.mockRejectedValue(new PhoneInfoNotFoundError());
+      const expectedResponse = {
+        number: fakePhoneNumber,
+        status: PhoneStatus.UNKNOWN,
+        description: null,
+      };
+      expect(await appController.lookupPhoneInfo(fakePhoneNumber)).toEqual(
+        expectedResponse,
+      );
+      expect(appService.lookupPhoneInfo).toHaveBeenCalledWith(fakePhoneNumber);
     });
   });
 });
