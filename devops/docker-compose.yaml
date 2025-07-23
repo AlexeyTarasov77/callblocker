@@ -16,6 +16,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: server_started
   postgres:
     container_name: callblocker-postgres
     image: postgres:17.1-alpine
@@ -28,3 +30,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+  redis:
+    container_name: callblocker-redis
+    image: redis:latest
