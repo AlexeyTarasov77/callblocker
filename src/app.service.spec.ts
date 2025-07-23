@@ -1,10 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppService, PhoneInfoNotFoundError } from './app.service';
-import { PhoneInfoEntity, PhoneStatus } from './entities';
+import { PhoneInfoEntity } from './entities';
 import { PhoneInfoRepoToken } from './app.providers';
 import { Repository } from 'typeorm';
-import { creeateFakePhoneInfo } from './app.test-utils';
+import { createFakePhoneInfo } from './app.test-utils';
 import { faker } from '@faker-js/faker/.';
+import { AddPhoneInfoDto } from './app.dto';
 
 describe('AppService', () => {
   let appService: AppService;
@@ -17,6 +18,8 @@ describe('AppService', () => {
           provide: PhoneInfoRepoToken,
           useValue: {
             findOneBy: jest.fn(),
+            create: jest.fn(),
+            save: jest.fn()
           },
         },
         AppService,
@@ -29,7 +32,7 @@ describe('AppService', () => {
 
   describe('root', () => {
     it('test lookup phone info - success', async () => {
-      const expectedPhoneInfo = creeateFakePhoneInfo()
+      const expectedPhoneInfo = createFakePhoneInfo()
       phoneInfoRepo.findOneBy.mockResolvedValue(expectedPhoneInfo);
       expect(await appService.lookupPhoneInfo(expectedPhoneInfo.phone_number)).toEqual(
         expectedPhoneInfo,
@@ -45,6 +48,18 @@ describe('AppService', () => {
       expect(phoneInfoRepo.findOneBy).toHaveBeenCalledWith({
         phone_number: fakePhoneNumber,
       });
+    })
+    it('test add phone info', async () => {
+      const expectedPhoneInfo = createFakePhoneInfo()
+      const dto = Object.assign(new AddPhoneInfoDto(), {
+        ...expectedPhoneInfo,
+        number: expectedPhoneInfo.phone_number
+      })
+      phoneInfoRepo.create.mockReturnValue(expectedPhoneInfo)
+      phoneInfoRepo.save.mockResolvedValue(expectedPhoneInfo)
+      expect(await appService.addPhoneInfo(dto)).toEqual(expectedPhoneInfo)
+      expect(phoneInfoRepo.create).toHaveBeenCalledWith(dto)
+      expect(phoneInfoRepo.save).toHaveBeenCalledWith(expectedPhoneInfo)
     })
   });
 });

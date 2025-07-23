@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { PhoneInfoEntity, PhoneStatus } from "./entities";
 
-export const creeateFakePhoneInfo = () =>
+export const createFakePhoneInfo = () =>
   Object.assign(new PhoneInfoEntity(), {
     phone_number: faker.phone.number({ style: 'international' }),
     status: faker.helpers.arrayElement(Object.values(PhoneStatus)),

@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppController } from './app.controller';
+import { AppController, getPhoneInfoResponse } from './app.controller';
 import { AppService, PhoneInfoNotFoundError } from './app.service';
-import { creeateFakePhoneInfo } from './app.test-utils';
+import { createFakePhoneInfo } from './app.test-utils';
 import { PhoneStatus } from './entities';
 import { faker } from '@faker-js/faker/.';
+import { AddPhoneInfoDto } from './app.dto';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -15,7 +16,8 @@ describe('AppController', () => {
       providers: [{
         provide: AppService,
         useValue: {
-          lookupPhoneInfo: jest.fn()
+          lookupPhoneInfo: jest.fn(),
+          addPhoneInfo: jest.fn()
         }
       }],
     }).compile();
@@ -26,7 +28,7 @@ describe('AppController', () => {
 
   describe('root', () => {
     it('test lookup phone info - success', async () => {
-      const mockPhoneInfo = creeateFakePhoneInfo()
+      const mockPhoneInfo = createFakePhoneInfo()
       appService.lookupPhoneInfo.mockResolvedValue(mockPhoneInfo);
       const expectedResponse = {
         number: mockPhoneInfo.phone_number,
@@ -52,5 +54,18 @@ describe('AppController', () => {
       );
       expect(appService.lookupPhoneInfo).toHaveBeenCalledWith(fakePhoneNumber);
     });
+    it('test add phone info - success', async () => {
+      const mockPhoneInfo = createFakePhoneInfo()
+      appService.addPhoneInfo.mockResolvedValue(mockPhoneInfo);
+      const expectedResponse = getPhoneInfoResponse(mockPhoneInfo);
+      const dto = Object.assign(new AddPhoneInfoDto(), {
+        ...mockPhoneInfo,
+        number: mockPhoneInfo.phone_number
+      })
+      expect(await appController.addPhoneInfo(dto)).toEqual(
+        expectedResponse
+      );
+      expect(appService.addPhoneInfo).toHaveBeenCalledWith(dto);
+    })
   });
 });
