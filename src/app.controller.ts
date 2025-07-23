@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { AppService, PhoneInfoNotFoundError } from './app.service';
 import { PhoneInfoEntity, PhoneStatus } from './entities';
 import { AddPhoneInfoDto } from './app.dto';
@@ -11,23 +11,19 @@ export const getPhoneInfoResponse = (phoneInfo: PhoneInfoEntity) => ({
   last_updated: phoneInfo.updated_at,
 });
 
-@Controller()
+@Controller("/api")
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(private readonly appService: AppService) { }
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
-  }
   @Get('/lookup')
-  async lookupPhoneInfo(phoneNumber: string) {
+  async lookupPhoneInfo(@Query("number") number: string) {
     try {
-      const phoneInfo = await this.appService.lookupPhoneInfo(phoneNumber);
+      const phoneInfo = await this.appService.lookupPhoneInfo(number);
       return getPhoneInfoResponse(phoneInfo);
     } catch (err) {
       if (err instanceof PhoneInfoNotFoundError) {
         return {
-          number: phoneNumber,
+          number: number,
           status: PhoneStatus.UNKNOWN,
           description: null,
         };

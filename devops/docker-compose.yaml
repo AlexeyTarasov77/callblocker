@@ -9,6 +9,7 @@ services:
       context: ../
     volumes:
       - ../src:/app/src
+      - ../test/:/app/test
     env_file:
         - ../.dev.env
     ports:
@@ -17,7 +18,7 @@ services:
       postgres:
         condition: service_healthy
       redis:
-        condition: server_started
+        condition: service_started
   postgres:
     container_name: callblocker-postgres
     image: postgres:17.1-alpine

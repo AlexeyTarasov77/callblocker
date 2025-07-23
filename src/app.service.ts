@@ -14,9 +14,6 @@ export class PhoneInfoNotFoundError extends Error {
 export class AppService {
   @Inject(PhoneInfoRepoToken)
   private phoneInfoRepo: Repository<PhoneInfoEntity>;
-  getHello(): string {
-    return 'Hello World!';
-  }
   async lookupPhoneInfo(phoneNumber: string): Promise<PhoneInfoEntity> {
     const res = await this.phoneInfoRepo.findOneBy({
       phone_number: phoneNumber,
