@@ -1,4 +1,4 @@
-import { IsEnum, IsPhoneNumber, MinLength } from 'class-validator';
+import { IsEnum, IsOptional, IsPhoneNumber, MinLength } from 'class-validator';
 import { PhoneStatus } from './entities';
 
 export class AddPhoneInfoDto {
@@ -11,5 +11,6 @@ export class AddPhoneInfoDto {
   @MinLength(5)
   description: string;
 
+  @IsOptional()
   source?: string;
 }
