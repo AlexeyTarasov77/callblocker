@@ -26,7 +26,7 @@ export class AppService {
   }
 
   async addPhoneInfo(dto: AddPhoneInfoDto): Promise<PhoneInfoEntity> {
-    const ent = this.phoneInfoRepo.create(dto)
-    return await this.phoneInfoRepo.save(ent)
+    const ent = this.phoneInfoRepo.create(dto);
+    return await this.phoneInfoRepo.save(ent);
   }
 }

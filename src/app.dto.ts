@@ -1,5 +1,5 @@
-import { IsEnum, IsPhoneNumber, MinLength } from "class-validator";
-import { PhoneStatus } from "./entities";
+import { IsEnum, IsPhoneNumber, MinLength } from 'class-validator';
+import { PhoneStatus } from './entities';
 
 export class AddPhoneInfoDto {
   @IsPhoneNumber()

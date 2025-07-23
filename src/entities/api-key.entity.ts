@@ -1,6 +1,6 @@
 import { Column, Entity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity({ name: "api_key" })
+@Entity({ name: 'api_key' })
 export class ApiKeyEntity {
   @Column({ primary: true })
   key: string;

@@ -1,5 +1,5 @@
-import { faker } from "@faker-js/faker";
-import { PhoneInfoEntity, PhoneStatus } from "./entities";
+import { faker } from '@faker-js/faker';
+import { PhoneInfoEntity, PhoneStatus } from './entities';
 
 export const createFakePhoneInfo = () =>
   Object.assign(new PhoneInfoEntity(), {
@@ -10,4 +10,3 @@ export const createFakePhoneInfo = () =>
     created_at: new Date(),
     updated_at: new Date(),
   });
-

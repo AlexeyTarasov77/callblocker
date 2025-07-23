@@ -21,4 +21,4 @@ import { providers } from './app.providers';
   controllers: [AppController],
   providers: [...providers, AppService],
 })
-export class AppModule { }
+export class AppModule {}

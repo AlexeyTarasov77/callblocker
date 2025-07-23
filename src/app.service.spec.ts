@@ -19,7 +19,7 @@ describe('AppService', () => {
           useValue: {
             findOneBy: jest.fn(),
             create: jest.fn(),
-            save: jest.fn()
+            save: jest.fn(),
           },
         },
         AppService,
@@ -32,34 +32,36 @@ describe('AppService', () => {
 
   describe('root', () => {
     it('test lookup phone info - success', async () => {
-      const expectedPhoneInfo = createFakePhoneInfo()
+      const expectedPhoneInfo = createFakePhoneInfo();
       phoneInfoRepo.findOneBy.mockResolvedValue(expectedPhoneInfo);
-      expect(await appService.lookupPhoneInfo(expectedPhoneInfo.phone_number)).toEqual(
-        expectedPhoneInfo,
-      );
+      expect(
+        await appService.lookupPhoneInfo(expectedPhoneInfo.phone_number),
+      ).toEqual(expectedPhoneInfo);
       expect(phoneInfoRepo.findOneBy).toHaveBeenCalledWith({
         phone_number: expectedPhoneInfo.phone_number,
       });
     });
     it('test lookup phone info - not found', async () => {
-      const fakePhoneNumber = faker.phone.number({ style: 'international' })
+      const fakePhoneNumber = faker.phone.number({ style: 'international' });
       phoneInfoRepo.findOneBy.mockResolvedValue(null);
-      expect(async () => await appService.lookupPhoneInfo(fakePhoneNumber)).rejects.toThrow(PhoneInfoNotFoundError)
+      expect(
+        async () => await appService.lookupPhoneInfo(fakePhoneNumber),
+      ).rejects.toThrow(PhoneInfoNotFoundError);
       expect(phoneInfoRepo.findOneBy).toHaveBeenCalledWith({
         phone_number: fakePhoneNumber,
       });
-    })
+    });
     it('test add phone info', async () => {
-      const expectedPhoneInfo = createFakePhoneInfo()
+      const expectedPhoneInfo = createFakePhoneInfo();
       const dto = Object.assign(new AddPhoneInfoDto(), {
         ...expectedPhoneInfo,
-        number: expectedPhoneInfo.phone_number
-      })
-      phoneInfoRepo.create.mockReturnValue(expectedPhoneInfo)
-      phoneInfoRepo.save.mockResolvedValue(expectedPhoneInfo)
-      expect(await appService.addPhoneInfo(dto)).toEqual(expectedPhoneInfo)
-      expect(phoneInfoRepo.create).toHaveBeenCalledWith(dto)
-      expect(phoneInfoRepo.save).toHaveBeenCalledWith(expectedPhoneInfo)
-    })
+        number: expectedPhoneInfo.phone_number,
+      });
+      phoneInfoRepo.create.mockReturnValue(expectedPhoneInfo);
+      phoneInfoRepo.save.mockResolvedValue(expectedPhoneInfo);
+      expect(await appService.addPhoneInfo(dto)).toEqual(expectedPhoneInfo);
+      expect(phoneInfoRepo.create).toHaveBeenCalledWith(dto);
+      expect(phoneInfoRepo.save).toHaveBeenCalledWith(expectedPhoneInfo);
+    });
   });
 });

@@ -1,3 +1,5 @@
+jest.mock('./auth.guard.ts');
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController, getPhoneInfoResponse } from './app.controller';
 import { AppService, PhoneInfoNotFoundError } from './app.service';
@@ -13,13 +15,15 @@ describe('AppController', () => {
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      providers: [{
-        provide: AppService,
-        useValue: {
-          lookupPhoneInfo: jest.fn(),
-          addPhoneInfo: jest.fn()
-        }
-      }],
+      providers: [
+        {
+          provide: AppService,
+          useValue: {
+            lookupPhoneInfo: jest.fn(),
+            addPhoneInfo: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     appController = app.get<AppController>(AppController);
@@ -28,7 +32,7 @@ describe('AppController', () => {
 
   describe('root', () => {
     it('test lookup phone info - success', async () => {
-      const mockPhoneInfo = createFakePhoneInfo()
+      const mockPhoneInfo = createFakePhoneInfo();
       appService.lookupPhoneInfo.mockResolvedValue(mockPhoneInfo);
       const expectedResponse = {
         number: mockPhoneInfo.phone_number,
@@ -36,14 +40,18 @@ describe('AppController', () => {
         description: mockPhoneInfo.description,
         last_updated: mockPhoneInfo.updated_at,
       };
-      expect(await appController.lookupPhoneInfo(mockPhoneInfo.phone_number)).toEqual(
-        expectedResponse,
+      expect(
+        await appController.lookupPhoneInfo(mockPhoneInfo.phone_number),
+      ).toEqual(expectedResponse);
+      expect(appService.lookupPhoneInfo).toHaveBeenCalledWith(
+        mockPhoneInfo.phone_number,
       );
-      expect(appService.lookupPhoneInfo).toHaveBeenCalledWith(mockPhoneInfo.phone_number);
     });
     it('test lookup phone info - not found', async () => {
-      const fakePhoneNumber = faker.phone.number({ style: 'international' })
-      appService.lookupPhoneInfo.mockRejectedValue(new PhoneInfoNotFoundError());
+      const fakePhoneNumber = faker.phone.number({ style: 'international' });
+      appService.lookupPhoneInfo.mockRejectedValue(
+        new PhoneInfoNotFoundError(),
+      );
       const expectedResponse = {
         number: fakePhoneNumber,
         status: PhoneStatus.UNKNOWN,
@@ -55,17 +63,15 @@ describe('AppController', () => {
       expect(appService.lookupPhoneInfo).toHaveBeenCalledWith(fakePhoneNumber);
     });
     it('test add phone info - success', async () => {
-      const mockPhoneInfo = createFakePhoneInfo()
+      const mockPhoneInfo = createFakePhoneInfo();
       appService.addPhoneInfo.mockResolvedValue(mockPhoneInfo);
       const expectedResponse = getPhoneInfoResponse(mockPhoneInfo);
       const dto = Object.assign(new AddPhoneInfoDto(), {
         ...mockPhoneInfo,
-        number: mockPhoneInfo.phone_number
-      })
-      expect(await appController.addPhoneInfo(dto)).toEqual(
-        expectedResponse
-      );
+        number: mockPhoneInfo.phone_number,
+      });
+      expect(await appController.addPhoneInfo(dto)).toEqual(expectedResponse);
       expect(appService.addPhoneInfo).toHaveBeenCalledWith(dto);
-    })
+    });
   });
 });
