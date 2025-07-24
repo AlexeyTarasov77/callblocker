@@ -24,14 +24,14 @@ export class AppService {
   }
 
   async addPhoneInfo(dto: AddPhoneInfoDto): Promise<PhoneInfoEntity> {
-    const ent = this.phoneInfoRepo.create(dto);
+    const ent = this.phoneInfoRepo.create({ ...dto, phone_number: dto.number });
     return await this.phoneInfoRepo.save(ent);
   }
   async importPhoneInfo(
     importer: PhoneInfoImporter,
   ): Promise<PhoneInfoEntity[]> {
     const payload = await importer.import();
-    const data = await this.phoneInfoRepo.upsert(payload, ['phone_number']);
+    const data = await this.phoneInfoRepo.upsert(payload.map(dto => ({ ...dto, phone_number: dto.number })), ['phone_number']);
     return payload.map((dto, i) => ({
       ...dto,
       ...data.generatedMaps[i],

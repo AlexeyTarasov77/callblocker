@@ -31,7 +31,7 @@ export const getPhoneInfoResponse = (phoneInfo: PhoneInfoEntity) => ({
 
 @Controller('/api')
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(private readonly appService: AppService) { }
 
   @Get('/lookup')
   @UseInterceptors(CacheInterceptor)

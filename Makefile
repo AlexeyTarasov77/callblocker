@@ -11,4 +11,4 @@ compose/down:
 	docker compose -f devops/docker-compose.yaml down
 
 get-api-key:
-	@bash get-api-key.sh
+	@POSTGRES_USER=${POSTGRES_USER} POSTGRES_DB=${POSTGRES_DB} bash get-api-key.sh

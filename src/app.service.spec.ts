@@ -65,12 +65,18 @@ describe('AppService', () => {
       expect(phoneInfoRepo.save).toHaveBeenCalledWith(expectedPhoneInfo);
     });
     it('test import phone info', async () => {
-      const expectedPayload = Array.from({
+      const importedData = Array.from({
         length: faker.number.int({ min: 3, max: 6 }),
-      }).map((_) => createFakePhoneInfo());
-      const mockImport = jest.fn().mockResolvedValue(expectedPayload);
+      }).map((_) => {
+        const expectedPhoneInfo = createFakePhoneInfo();
+        return Object.assign(new AddPhoneInfoDto(), {
+          ...expectedPhoneInfo,
+          number: expectedPhoneInfo.phone_number,
+        })
+      });
+      const mockDataImport = jest.fn().mockResolvedValue(importedData);
       phoneInfoRepo.upsert.mockResolvedValue({
-        generatedMaps: Array.from({ length: expectedPayload.length }).map(
+        generatedMaps: Array.from({ length: importedData.length }).map(
           (_) => ({
             id: faker.number.int(),
             created_at: faker.date.recent(),
@@ -78,9 +84,9 @@ describe('AppService', () => {
           }),
         ),
       });
-      await appService.importPhoneInfo({ import: mockImport });
-      expect(mockImport).toHaveBeenCalled();
-      expect(phoneInfoRepo.upsert).toHaveBeenCalledWith(expectedPayload, [
+      await appService.importPhoneInfo({ import: mockDataImport });
+      expect(mockDataImport).toHaveBeenCalled();
+      expect(phoneInfoRepo.upsert).toHaveBeenCalledWith(importedData, [
         'phone_number',
       ]);
     });

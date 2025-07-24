@@ -65,6 +65,7 @@ describe('AppController (e2e)', () => {
       const fakePhoneInfo = createFakePhoneInfo();
       const dto = Object.assign(new AddPhoneInfoDto(), {
         ...fakePhoneInfo,
+        phone_number: undefined,
         number: fakePhoneInfo.phone_number,
       });
       const expectedResponse = getPhoneInfoResponse(fakePhoneInfo);
