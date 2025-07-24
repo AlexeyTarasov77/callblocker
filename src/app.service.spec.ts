@@ -72,17 +72,15 @@ describe('AppService', () => {
         return Object.assign(new AddPhoneInfoDto(), {
           ...expectedPhoneInfo,
           number: expectedPhoneInfo.phone_number,
-        })
+        });
       });
       const mockDataImport = jest.fn().mockResolvedValue(importedData);
       phoneInfoRepo.upsert.mockResolvedValue({
-        generatedMaps: Array.from({ length: importedData.length }).map(
-          (_) => ({
-            id: faker.number.int(),
-            created_at: faker.date.recent(),
-            updated_at: faker.date.recent(),
-          }),
-        ),
+        generatedMaps: Array.from({ length: importedData.length }).map((_) => ({
+          id: faker.number.int(),
+          created_at: faker.date.recent(),
+          updated_at: faker.date.recent(),
+        })),
       });
       await appService.importPhoneInfo({ import: mockDataImport });
       expect(mockDataImport).toHaveBeenCalled();

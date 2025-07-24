@@ -31,7 +31,10 @@ export class AppService {
     importer: PhoneInfoImporter,
   ): Promise<PhoneInfoEntity[]> {
     const payload = await importer.import();
-    const data = await this.phoneInfoRepo.upsert(payload.map(dto => ({ ...dto, phone_number: dto.number })), ['phone_number']);
+    const data = await this.phoneInfoRepo.upsert(
+      payload.map((dto) => ({ ...dto, phone_number: dto.number })),
+      ['phone_number'],
+    );
     return payload.map((dto, i) => ({
       ...dto,
       ...data.generatedMaps[i],

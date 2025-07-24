@@ -5,7 +5,7 @@ import { loggerMiddleware } from './logger.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.use(loggerMiddleware)
+  app.use(loggerMiddleware);
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(process.env.PORT ?? 3000);
 }

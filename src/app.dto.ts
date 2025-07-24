@@ -3,7 +3,9 @@ import { PhoneStatus } from './entities';
 import { Transform } from 'class-transformer';
 
 export class AddPhoneInfoDto {
-  @Transform(({ value }) => !String(value).startsWith("+") ? "+" + String(value) : value)
+  @Transform(({ value }) =>
+    !String(value).startsWith('+') ? '+' + String(value) : value,
+  )
   @IsPhoneNumber()
   number: string;
 
