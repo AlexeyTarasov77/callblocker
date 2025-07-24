@@ -4,23 +4,23 @@
 
 Allows tracking phone numbers which took part in spam or other suspicious activity
 
-## Project setup
+## Project setup (build and run)
 
 ```bash
-$ npm install
+$ make
 ```
 
-## Compile and run the project
+## Run / stop services
 
 ```bash
 # development
-$ npm run start
+$ make compose/up
 
-# watch mode
-$ npm run start:dev
+# stop
+$ make compose/down
 
-# production mode
-$ npm run start:prod
+# rebuild and start again
+$ make
 ```
 
 ## Run tests
@@ -30,8 +30,11 @@ $ npm run start:prod
 $ npm run test
 
 # e2e tests
-$ npm run test:e2e
+$ make compose/test
+```
 
-# test coverage
-$ npm run test:cov
+## Obtain api key
+
+```bash
+make get-api-key
 ```
