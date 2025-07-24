@@ -9,6 +9,8 @@ import { createFakePhoneInfo } from './app.test-utils';
 import { PhoneStatus } from './entities';
 import { faker } from '@faker-js/faker/.';
 import { AddPhoneInfoDto } from './app.dto';
+import { CSVImporter, ExcelImporter, InvalidFileContentError } from './app.lib';
+import { BadRequestException } from '@nestjs/common';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -23,6 +25,7 @@ describe('AppController', () => {
           useValue: {
             lookupPhoneInfo: jest.fn(),
             addPhoneInfo: jest.fn(),
+            importPhoneInfo: jest.fn()
           },
         },
       ],
@@ -75,5 +78,37 @@ describe('AppController', () => {
       expect(await appController.addPhoneInfo(dto)).toEqual(expectedResponse);
       expect(appService.addPhoneInfo).toHaveBeenCalledWith(dto);
     });
+    describe('test import phone info', () => {
+      it('success - csv', async () => {
+        const expectedPhoneInfoEnts = Array.from({ length: faker.number.int({ min: 3, max: 6 }) }).map(_ => createFakePhoneInfo())
+        const fakeBuf = Buffer.from([])
+        const expectedResponse = expectedPhoneInfoEnts.map(getPhoneInfoResponse)
+        appService.importPhoneInfo.mockResolvedValue(expectedPhoneInfoEnts)
+        expect(await appController.importPhoneInfo({ buffer: fakeBuf, mimetype: "text/csv" } as any))
+          .toEqual(expectedResponse)
+        expect(appService.importPhoneInfo).toHaveBeenCalledWith(expect.any(CSVImporter))
+      })
+      it('success - excel', async () => {
+        const expectedPhoneInfoEnts = Array.from({ length: faker.number.int({ min: 3, max: 6 }) }).map(_ => createFakePhoneInfo())
+        const fakeBuf = Buffer.from([])
+        const expectedResponse = expectedPhoneInfoEnts.map(getPhoneInfoResponse)
+        appService.importPhoneInfo.mockResolvedValue(expectedPhoneInfoEnts)
+        expect(await appController.importPhoneInfo({ buffer: fakeBuf, mimetype: "application/vnd.ms-excel" } as any))
+          .toEqual(expectedResponse)
+        expect(appService.importPhoneInfo).toHaveBeenCalledWith(expect.any(ExcelImporter))
+      })
+      it('failure - unsupported format', async () => {
+        const fakeBuf = Buffer.from([])
+        expect(async () => await appController.importPhoneInfo({ buffer: fakeBuf, mimetype: "unsupported" } as any))
+          .rejects.toThrow(BadRequestException)
+      })
+      it('failure - invalid file contents', async () => {
+        const fakeBuf = Buffer.from([])
+        appService.importPhoneInfo.mockRejectedValue(new InvalidFileContentError())
+        expect(async () => await appController.importPhoneInfo({ buffer: fakeBuf, mimetype: "text/csv" } as any))
+          .rejects.toThrow(BadRequestException)
+        expect(appService.importPhoneInfo).toHaveBeenCalledWith(expect.any(CSVImporter))
+      })
+    })
   });
 });

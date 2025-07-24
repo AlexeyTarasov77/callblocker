@@ -20,6 +20,7 @@ describe('AppService', () => {
             findOneBy: jest.fn(),
             create: jest.fn(),
             save: jest.fn(),
+            upsert: jest.fn()
           },
         },
         AppService,
@@ -63,5 +64,13 @@ describe('AppService', () => {
       expect(phoneInfoRepo.create).toHaveBeenCalledWith(dto);
       expect(phoneInfoRepo.save).toHaveBeenCalledWith(expectedPhoneInfo);
     });
+    it('test import phone info', async () => {
+      const expectedPayload = Array.from({ length: faker.number.int({ min: 3, max: 6 }) }).map(_ => createFakePhoneInfo())
+      const mockImport = jest.fn().mockResolvedValue(expectedPayload)
+      phoneInfoRepo.upsert.mockResolvedValue({ generatedMaps: Array.from({ length: expectedPayload.length }).map(_ => ({ id: faker.number.int(), created_at: faker.date.recent(), updated_at: faker.date.recent() })) })
+      await appService.importPhoneInfo({ import: mockImport })
+      expect(mockImport).toHaveBeenCalled()
+      expect(phoneInfoRepo.upsert).toHaveBeenCalledWith(expectedPayload, ["phone_number"])
+    })
   });
 });

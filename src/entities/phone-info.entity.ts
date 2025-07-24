@@ -32,7 +32,7 @@ export class PhoneInfoEntity {
 
   // Information source
   @Column({ nullable: true })
-  source: string;
+  source?: string;
 
   @CreateDateColumn()
   created_at: Date;
