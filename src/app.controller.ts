@@ -1,11 +1,26 @@
-import { BadRequestException, Body, Controller, Get, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { AppService, PhoneInfoNotFoundError } from './app.service';
 import { PhoneInfoEntity, PhoneStatus } from './entities';
 import { AddPhoneInfoDto } from './app.dto';
 import { AuthGuard } from './auth.guard';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CSVImporter, ExcelImporter, InvalidFileContentError, PhoneInfoImporter } from './app.lib';
+import {
+  CSVImporter,
+  ExcelImporter,
+  InvalidFileContentError,
+  PhoneInfoImporter,
+} from './app.lib';
 
 export const getPhoneInfoResponse = (phoneInfo: PhoneInfoEntity) => ({
   number: phoneInfo.phone_number,
@@ -14,13 +29,13 @@ export const getPhoneInfoResponse = (phoneInfo: PhoneInfoEntity) => ({
   last_updated: phoneInfo.updated_at,
 });
 
-@Controller("/api")
+@Controller('/api')
 export class AppController {
-  constructor(private readonly appService: AppService) { }
+  constructor(private readonly appService: AppService) {}
 
   @Get('/lookup')
   @UseInterceptors(CacheInterceptor)
-  async lookupPhoneInfo(@Query("number") number: string) {
+  async lookupPhoneInfo(@Query('number') number: string) {
     try {
       const phoneInfo = await this.appService.lookupPhoneInfo(number);
       return getPhoneInfoResponse(phoneInfo);
@@ -45,25 +60,28 @@ export class AppController {
   @UseInterceptors(FileInterceptor('file'))
   async importPhoneInfo(@UploadedFile() file: Express.Multer.File) {
     const isCsv = file.mimetype.includes('csv');
-    const isExcel = file.mimetype.includes('spreadsheetml') || file.mimetype.includes('excel');
+    const isExcel =
+      file.mimetype.includes('spreadsheetml') ||
+      file.mimetype.includes('excel');
     if (!isCsv && !isExcel) {
-      throw new BadRequestException('Invalid file type. Only CSV and Excel files are supported.');
+      throw new BadRequestException(
+        'Invalid file type. Only CSV and Excel files are supported.',
+      );
     }
     let importer: PhoneInfoImporter;
     if (isCsv) {
-      importer = new CSVImporter(file.buffer)
+      importer = new CSVImporter(file.buffer);
     } else if (isExcel) {
-      importer = new ExcelImporter(file.buffer)
+      importer = new ExcelImporter(file.buffer);
     }
     try {
-
-      const phoneInfoEntities = await this.appService.importPhoneInfo(importer)
-      return phoneInfoEntities.map(getPhoneInfoResponse)
+      const phoneInfoEntities = await this.appService.importPhoneInfo(importer);
+      return phoneInfoEntities.map(getPhoneInfoResponse);
     } catch (err) {
       if (err instanceof InvalidFileContentError) {
-        throw new BadRequestException(err.message)
+        throw new BadRequestException(err.message);
       }
-      throw err
+      throw err;
     }
   }
 }

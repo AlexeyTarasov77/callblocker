@@ -14,8 +14,8 @@ import { randomUUID } from 'crypto';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
-  let phoneInfoRepo: Repository<PhoneInfoEntity>
-  let apiKeyRepo: Repository<ApiKeyEntity>
+  let phoneInfoRepo: Repository<PhoneInfoEntity>;
+  let apiKeyRepo: Repository<ApiKeyEntity>;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -25,12 +25,12 @@ describe('AppController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
-    phoneInfoRepo = app.get(PhoneInfoRepoToken)
-    apiKeyRepo = app.get(ApiKeyRepoToken)
+    phoneInfoRepo = app.get(PhoneInfoRepoToken);
+    apiKeyRepo = app.get(ApiKeyRepoToken);
   });
 
-  describe("GET /api/lookup", () => {
-    it("not found number", async () => {
+  describe('GET /api/lookup', () => {
+    it('not found number', async () => {
       const fakePhoneNumber = faker.phone.number({ style: 'international' });
       const expectedResponse = {
         number: fakePhoneNumber,
@@ -38,68 +38,70 @@ describe('AppController (e2e)', () => {
         description: null,
       };
       const resp = await request(app.getHttpServer())
-        .get("/api/lookup")
-        .query({ number: fakePhoneNumber })
+        .get('/api/lookup')
+        .query({ number: fakePhoneNumber });
       expect(resp.status).toEqual(200);
       expect(resp.body).toEqual(expectedResponse);
-    })
-    it("success", async () => {
-      const fakePhoneInfo = createFakePhoneInfo()
-      await phoneInfoRepo.save(fakePhoneInfo)
+    });
+    it('success', async () => {
+      const fakePhoneInfo = createFakePhoneInfo();
+      await phoneInfoRepo.save(fakePhoneInfo);
       const expectedResponse = getPhoneInfoResponse(fakePhoneInfo);
-      expectedResponse.last_updated = expectedResponse.last_updated.toISOString() as any
+      expectedResponse.last_updated =
+        expectedResponse.last_updated.toISOString() as any;
       const resp = await request(app.getHttpServer())
-        .get("/api/lookup")
-        .query({ number: fakePhoneInfo.phone_number })
+        .get('/api/lookup')
+        .query({ number: fakePhoneInfo.phone_number });
       expect(resp.status).toEqual(200);
       expect(resp.body).toEqual(expectedResponse);
-      await phoneInfoRepo.delete({ phone_number: fakePhoneInfo.phone_number })
-    })
-  })
+      await phoneInfoRepo.delete({ phone_number: fakePhoneInfo.phone_number });
+    });
+  });
 
-  describe("POST /api/admin/add", () => {
-    it("success", async () => {
-      let apiKey = apiKeyRepo.create({ key: randomUUID() })
-      apiKey = await apiKeyRepo.save(apiKey)
-      const fakePhoneInfo = createFakePhoneInfo()
+  describe('POST /api/admin/add', () => {
+    it('success', async () => {
+      let apiKey = apiKeyRepo.create({ key: randomUUID() });
+      apiKey = await apiKeyRepo.save(apiKey);
+      const fakePhoneInfo = createFakePhoneInfo();
       const dto = Object.assign(new AddPhoneInfoDto(), {
         ...fakePhoneInfo,
         number: fakePhoneInfo.phone_number,
       });
       const expectedResponse = getPhoneInfoResponse(fakePhoneInfo);
-      expectedResponse.last_updated = expectedResponse.last_updated.toISOString() as any
+      expectedResponse.last_updated =
+        expectedResponse.last_updated.toISOString() as any;
       const resp = await request(app.getHttpServer())
-        .post("/api/admin/add")
+        .post('/api/admin/add')
         .send(dto)
-        .set("Content-Type", 'application/json')
-        .set(ApiKeyHeaderName, apiKey.key)
+        .set('Content-Type', 'application/json')
+        .set(ApiKeyHeaderName, apiKey.key);
       expect(resp.status).toEqual(201);
       expect(resp.body).toEqual(expectedResponse);
 
-      await apiKeyRepo.delete({ key: apiKey.key })
-    })
-    it("invalid phone number", async () => {
-      let apiKey = apiKeyRepo.create({ key: randomUUID() })
-      apiKey = await apiKeyRepo.save(apiKey)
-      const fakePhoneInfo = createFakePhoneInfo()
+      await apiKeyRepo.delete({ key: apiKey.key });
+    });
+    it('invalid phone number', async () => {
+      let apiKey = apiKeyRepo.create({ key: randomUUID() });
+      apiKey = await apiKeyRepo.save(apiKey);
+      const fakePhoneInfo = createFakePhoneInfo();
       const dto = Object.assign(new AddPhoneInfoDto(), {
         ...fakePhoneInfo,
-        number: "0123456789",
+        number: '0123456789',
       });
       const resp = await request(app.getHttpServer())
-        .post("/api/admin/add")
+        .post('/api/admin/add')
         .send(dto)
-        .set("Content-Type", 'application/json')
-        .set(ApiKeyHeaderName, apiKey.key)
+        .set('Content-Type', 'application/json')
+        .set(ApiKeyHeaderName, apiKey.key);
       expect(resp.status).toEqual(400);
 
-      await apiKeyRepo.delete({ key: apiKey.key })
-    })
-    it("access denied", async () => {
+      await apiKeyRepo.delete({ key: apiKey.key });
+    });
+    it('access denied', async () => {
       const resp = await request(app.getHttpServer())
-        .post("/api/admin/add")
-        .send({})
+        .post('/api/admin/add')
+        .send({});
       expect(resp.status).toEqual(403);
-    })
-  })
+    });
+  });
 });
