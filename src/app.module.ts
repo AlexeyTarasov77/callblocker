@@ -1,12 +1,13 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApiKeyEntity, PhoneInfoEntity } from './entities';
 import { providers } from './app.providers';
-import { Keyv } from 'keyv';
 import { CacheModule } from '@nestjs/cache-manager';
 import { createKeyv } from '@keyv/redis';
+import { LoggerMiddleware } from './logger.middleware';
+import { RequestLogEntity } from './entities/request-log.entity';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { createKeyv } from '@keyv/redis';
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [PhoneInfoEntity, ApiKeyEntity],
+      entities: [PhoneInfoEntity, ApiKeyEntity, RequestLogEntity],
       synchronize: true,
     }),
     CacheModule.registerAsync({
@@ -33,4 +34,10 @@ import { createKeyv } from '@keyv/redis';
   controllers: [AppController],
   providers: [...providers, AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LoggerMiddleware)
+      .forRoutes('*');
+  }
+}
