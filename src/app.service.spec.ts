@@ -21,6 +21,7 @@ describe('AppService', () => {
             create: jest.fn(),
             save: jest.fn(),
             upsert: jest.fn(),
+            existsBy: jest.fn()
           },
         },
         AppService,
@@ -54,13 +55,15 @@ describe('AppService', () => {
     });
     it('test add phone info', async () => {
       const expectedPhoneInfo = createFakePhoneInfo();
+      const fakeIsExists = faker.datatype.boolean()
       const dto = Object.assign(new AddPhoneInfoDto(), {
         ...expectedPhoneInfo,
         number: expectedPhoneInfo.phone_number,
       });
       phoneInfoRepo.create.mockReturnValue(expectedPhoneInfo);
       phoneInfoRepo.save.mockResolvedValue(expectedPhoneInfo);
-      expect(await appService.addPhoneInfo(dto)).toEqual(expectedPhoneInfo);
+      phoneInfoRepo.existsBy.mockResolvedValue(fakeIsExists)
+      expect(await appService.addPhoneInfo(dto)).toEqual({ ent: expectedPhoneInfo, created: !fakeIsExists });
       expect(phoneInfoRepo.create).toHaveBeenCalledWith(dto);
       expect(phoneInfoRepo.save).toHaveBeenCalledWith(expectedPhoneInfo);
     });

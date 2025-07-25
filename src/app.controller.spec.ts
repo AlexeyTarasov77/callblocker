@@ -7,9 +7,10 @@ import { AppService, PhoneInfoNotFoundError } from './app.service';
 import { createFakePhoneInfo } from './app.test-utils';
 import { PhoneStatus } from './entities';
 import { faker } from '@faker-js/faker/.';
-import { AddPhoneInfoDto } from './app.dto';
+import { AddPhoneInfoDto, LookupPhoneInfoDto } from './app.dto';
 import { CSVImporter, ExcelImporter, InvalidFileContentError } from './app.lib';
 import { BadRequestException } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -27,6 +28,12 @@ describe('AppController', () => {
             importPhoneInfo: jest.fn(),
           },
         },
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            del: jest.fn()
+          }
+        }
       ],
     }).compile();
 
@@ -45,7 +52,7 @@ describe('AppController', () => {
         last_updated: mockPhoneInfo.updated_at,
       };
       expect(
-        await appController.lookupPhoneInfo(mockPhoneInfo.phone_number),
+        await appController.lookupPhoneInfo(Object.assign(new LookupPhoneInfoDto(), { number: mockPhoneInfo.phone_number })),
       ).toEqual(expectedResponse);
       expect(appService.lookupPhoneInfo).toHaveBeenCalledWith(
         mockPhoneInfo.phone_number,
@@ -61,20 +68,20 @@ describe('AppController', () => {
         status: PhoneStatus.UNKNOWN,
         description: null,
       };
-      expect(await appController.lookupPhoneInfo(fakePhoneNumber)).toEqual(
+      expect(await appController.lookupPhoneInfo(Object.assign(new LookupPhoneInfoDto(), { number: fakePhoneNumber }))).toEqual(
         expectedResponse,
       );
       expect(appService.lookupPhoneInfo).toHaveBeenCalledWith(fakePhoneNumber);
     });
     it('test add phone info - success', async () => {
       const mockPhoneInfo = createFakePhoneInfo();
-      appService.addPhoneInfo.mockResolvedValue(mockPhoneInfo);
+      appService.addPhoneInfo.mockResolvedValue({ ent: mockPhoneInfo, created: faker.datatype.boolean() });
       const expectedResponse = getPhoneInfoResponse(mockPhoneInfo);
       const dto = Object.assign(new AddPhoneInfoDto(), {
         ...mockPhoneInfo,
         number: mockPhoneInfo.phone_number,
       });
-      expect(await appController.addPhoneInfo(dto)).toEqual(expectedResponse);
+      expect(await appController.addPhoneInfo(dto, { status: jest.fn() } as any)).toEqual(expectedResponse);
       expect(appService.addPhoneInfo).toHaveBeenCalledWith(dto);
     });
     describe('test import phone info', () => {
