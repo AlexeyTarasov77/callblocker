@@ -6,8 +6,7 @@ import { getPhoneInfoResponse } from '../src/app.controller';
 import { ApiKeyRepoToken, PhoneInfoRepoToken } from '../src/app.providers';
 import { Repository } from 'typeorm';
 import { ApiKeyEntity, PhoneInfoEntity, PhoneStatus } from '../src/entities';
-import { faker } from '@faker-js/faker/.';
-import { createFakePhoneInfo } from '../src/app.test-utils';
+import { createFakePhoneInfo, generateE164Number } from '../src/app.test-utils';
 import { AddPhoneInfoDto } from '../src/app.dto';
 import { ApiKeyHeaderName } from '../src/auth.guard';
 import { randomUUID } from 'crypto';
@@ -31,7 +30,7 @@ describe('AppController (e2e)', () => {
 
   describe('GET /api/lookup', () => {
     it('not found number', async () => {
-      const fakePhoneNumber = faker.phone.number({ style: 'international' });
+      const fakePhoneNumber = generateE164Number()
       const expectedResponse = {
         number: fakePhoneNumber,
         status: PhoneStatus.UNKNOWN,
@@ -42,6 +41,17 @@ describe('AppController (e2e)', () => {
         .query({ number: fakePhoneNumber });
       expect(resp.status).toEqual(200);
       expect(resp.body).toEqual(expectedResponse);
+    });
+    it('invalid number', async () => {
+      const resp = await request(app.getHttpServer())
+        .get('/api/lookup')
+        .query({ number: 123 });
+      expect(resp.status).toEqual(400);
+    });
+    it('empty number', async () => {
+      const resp = await request(app.getHttpServer())
+        .get('/api/lookup')
+      expect(resp.status).toEqual(400);
     });
     it('success', async () => {
       const fakePhoneInfo = createFakePhoneInfo();
