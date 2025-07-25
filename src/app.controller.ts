@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  Inject,
   Post,
   Query,
   Res,
@@ -15,7 +16,7 @@ import { AppService, PhoneInfoNotFoundError } from './app.service';
 import { PhoneInfoEntity, PhoneStatus } from './entities';
 import { AddPhoneInfoDto, LookupPhoneInfoDto } from './app.dto';
 import { AuthGuard } from './auth.guard';
-import { CacheInterceptor } from '@nestjs/cache-manager';
+import { Cache, CACHE_MANAGER, CacheInterceptor } from '@nestjs/cache-manager';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   CSVImporter,
@@ -34,7 +35,7 @@ export const getPhoneInfoResponse = (phoneInfo: PhoneInfoEntity) => ({
 
 @Controller('/api')
 export class AppController {
-  constructor(private readonly appService: AppService) { }
+  constructor(private readonly appService: AppService, @Inject(CACHE_MANAGER) private cacheManager: Cache) { }
 
   @Get('/lookup')
   @UseInterceptors(CacheInterceptor)
@@ -56,6 +57,10 @@ export class AppController {
   @UseGuards(AuthGuard)
   async addPhoneInfo(@Body() dto: AddPhoneInfoDto, @Res({ passthrough: true }) response: Response) {
     const res = await this.appService.addPhoneInfo(dto);
+    if (!res.created) {
+      const deleted = await this.cacheManager.del("/api/lookup?number=" + encodeURIComponent(dto.number))
+      console.log("IS CACHE INVALIDATED BY NUMBER", dto.number, deleted)
+    }
     response.status(res.created ? 201 : 200)
     return getPhoneInfoResponse(res.ent);
   }

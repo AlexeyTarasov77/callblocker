@@ -10,6 +10,7 @@ import { createFakePhoneInfo, generateE164Number } from '../src/app.test-utils';
 import { AddPhoneInfoDto } from '../src/app.dto';
 import { ApiKeyHeaderName } from '../src/auth.guard';
 import { randomUUID } from 'crypto';
+import { faker } from '@faker-js/faker/.';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -66,6 +67,42 @@ describe('AppController (e2e)', () => {
       expect(resp.body).toEqual(expectedResponse);
       await phoneInfoRepo.delete({ phone_number: fakePhoneInfo.phone_number });
     });
+    it('check changes after update (cache invalidation)', async () => {
+      const fakePhoneInfo = createFakePhoneInfo();
+      await phoneInfoRepo.save(fakePhoneInfo);
+      const expectedResponse = getPhoneInfoResponse(fakePhoneInfo);
+      expectedResponse.last_updated =
+        expectedResponse.last_updated.toISOString() as any;
+      let resp = await request(app.getHttpServer())
+        .get('/api/lookup')
+        .query({ number: fakePhoneInfo.phone_number });
+      expect(resp.status).toEqual(200);
+      expect(resp.body).toEqual(expectedResponse);
+      const updatedDescription = faker.lorem.sentence()
+      let apiKey = apiKeyRepo.create({ key: randomUUID() });
+      apiKey = await apiKeyRepo.save(apiKey);
+      // update, which should invalidate cache
+      resp = await request(app.getHttpServer())
+        .post('/api/admin/add')
+        .send({
+          ...fakePhoneInfo,
+          number: fakePhoneInfo.phone_number,
+          description: updatedDescription
+        })
+        .set('Content-Type', 'application/json')
+        .set(ApiKeyHeaderName, apiKey.key);
+      expect(resp.status).toEqual(200)
+      resp = await request(app.getHttpServer())
+        .get('/api/lookup')
+        .query({ number: fakePhoneInfo.phone_number });
+      expect(resp.status).toEqual(200);
+
+      expect(resp.body.description).toEqual(updatedDescription)
+      expect(resp.headers["x-cache"]).toEqual("MISS")
+
+      await phoneInfoRepo.delete({ phone_number: fakePhoneInfo.phone_number });
+      await apiKeyRepo.delete({ key: apiKey.key });
+    })
   });
 
   describe('POST /api/admin/add', () => {

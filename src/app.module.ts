@@ -25,7 +25,7 @@ import { RequestLogEntity } from './entities/request-log.entity';
       useFactory: async () => {
         const fiveMinsMs = 5 * 60 * 1000;
         return {
-          store: createKeyv(process.env.REDIS_URL),
+          stores: createKeyv(process.env.REDIS_URL),
           ttl: fiveMinsMs,
         };
       },
