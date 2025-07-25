@@ -61,11 +61,11 @@ describe('AppService', () => {
         number: expectedPhoneInfo.phone_number,
       });
       phoneInfoRepo.create.mockReturnValue(expectedPhoneInfo);
-      phoneInfoRepo.save.mockResolvedValue(expectedPhoneInfo);
+      phoneInfoRepo.upsert.mockResolvedValue({ generatedMaps: {} });
       phoneInfoRepo.existsBy.mockResolvedValue(fakeIsExists)
       expect(await appService.addPhoneInfo(dto)).toEqual({ ent: expectedPhoneInfo, created: !fakeIsExists });
       expect(phoneInfoRepo.create).toHaveBeenCalledWith(dto);
-      expect(phoneInfoRepo.save).toHaveBeenCalledWith(expectedPhoneInfo);
+      expect(phoneInfoRepo.upsert).toHaveBeenCalledWith(expectedPhoneInfo, ["phone_number"]);
     });
     it('test import phone info', async () => {
       const importedData = Array.from({
