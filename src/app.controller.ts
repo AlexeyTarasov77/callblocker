@@ -3,8 +3,10 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Post,
   Query,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -21,6 +23,7 @@ import {
   InvalidFileContentError,
   PhoneInfoImporter,
 } from './app.lib';
+import { Response } from 'express';
 
 export const getPhoneInfoResponse = (phoneInfo: PhoneInfoEntity) => ({
   number: phoneInfo.phone_number,
@@ -51,11 +54,13 @@ export class AppController {
   }
   @Post('/admin/add')
   @UseGuards(AuthGuard)
-  async addPhoneInfo(@Body() dto: AddPhoneInfoDto) {
-    const phoneInfo = await this.appService.addPhoneInfo(dto);
-    return getPhoneInfoResponse(phoneInfo);
+  async addPhoneInfo(@Body() dto: AddPhoneInfoDto, @Res({ passthrough: true }) response: Response) {
+    const res = await this.appService.addPhoneInfo(dto);
+    response.status(res.created ? 201 : 200)
+    return getPhoneInfoResponse(res.ent);
   }
   @Post('/admin/import')
+  @HttpCode(200)
   @UseGuards(AuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async importPhoneInfo(@UploadedFile() file: Express.Multer.File) {

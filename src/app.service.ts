@@ -23,9 +23,11 @@ export class AppService {
     return res;
   }
 
-  async addPhoneInfo(dto: AddPhoneInfoDto): Promise<PhoneInfoEntity> {
-    const ent = this.phoneInfoRepo.create({ ...dto, phone_number: dto.number });
-    return await this.phoneInfoRepo.save(ent);
+  async addPhoneInfo(dto: AddPhoneInfoDto): Promise<{ ent: PhoneInfoEntity, created: boolean }> {
+    const isExists = await this.phoneInfoRepo.existsBy({ phone_number: dto.number })
+    let ent = this.phoneInfoRepo.create({ ...dto, phone_number: dto.number });
+    ent = await this.phoneInfoRepo.save(ent);
+    return { ent, created: !isExists }
   }
   async importPhoneInfo(
     importer: PhoneInfoImporter,

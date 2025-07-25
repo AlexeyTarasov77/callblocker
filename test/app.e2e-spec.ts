@@ -91,6 +91,29 @@ describe('AppController (e2e)', () => {
 
       await apiKeyRepo.delete({ key: apiKey.key });
     });
+    it('success - updated', async () => {
+      let apiKey = apiKeyRepo.create({ key: randomUUID() });
+      apiKey = await apiKeyRepo.save(apiKey);
+      const fakePhoneInfo = createFakePhoneInfo();
+      await phoneInfoRepo.insert(fakePhoneInfo)
+      const dto = Object.assign(new AddPhoneInfoDto(), {
+        ...fakePhoneInfo,
+        phone_number: undefined,
+        number: fakePhoneInfo.phone_number,
+      });
+      const expectedResponse = getPhoneInfoResponse(fakePhoneInfo);
+      expectedResponse.last_updated =
+        expectedResponse.last_updated.toISOString() as any;
+      const resp = await request(app.getHttpServer())
+        .post('/api/admin/add')
+        .send(dto)
+        .set('Content-Type', 'application/json')
+        .set(ApiKeyHeaderName, apiKey.key);
+      expect(resp.status).toEqual(200);
+      expect(resp.body).toEqual(expectedResponse);
+
+      await apiKeyRepo.delete({ key: apiKey.key });
+    });
     it('invalid phone number', async () => {
       let apiKey = apiKeyRepo.create({ key: randomUUID() });
       apiKey = await apiKeyRepo.save(apiKey);
